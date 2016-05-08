@@ -72,6 +72,8 @@ extern crate bitflags;
 extern crate enum_primitive;
 extern crate num;
 
+#[cfg(feature = "vulkan")] extern crate vk_sys as vk;
+
 use libc::{c_char, c_double, c_float, c_int};
 use libc::{c_ushort, c_void};
 use std::ffi::{CStr, CString};
@@ -739,6 +741,33 @@ impl Glfw {
     }
 }
 
+#[cfg(feature = "vulkan")]
+pub fn vulkan_supported() -> bool {
+    let supported = unsafe { ffi::glfwVulkanSupported() };
+    supported == ffi::TRUE
+}
+
+#[cfg(feature = "vulkan")]
+pub fn get_required_instance_extensions() -> &'static [*const c_char] {
+    let mut count: u32 = 0;
+    unsafe {
+        let array_ptr: *const *const c_char =
+            ffi::glfwGetRequiredInstanceExtensions(&mut count as *mut u32);
+        let slice: &'static [*const c_char] =
+            slice::from_raw_parts(array_ptr, count as usize);
+        slice
+    }
+}
+
+#[cfg(feature = "vulkan")]
+pub fn get_physical_device_presentation_support(
+    instance: vk::Instance, device: vk::PhysicalDevice, queuefamily: u32
+) -> bool
+{
+    ffi::TRUE == unsafe { ffi::glfwGetPhysicalDevicePresentationSupport(
+        instance, device, queuefamily) }
+}
+
 /// Wrapper for `glfwGetVersion`.
 pub fn get_version() -> Version {
     unsafe {
@@ -1025,6 +1054,7 @@ pub enum WindowHint {
 pub enum ClientApiHint {
     OpenGl                   = ffi::OPENGL_API,
     OpenGlEs                 = ffi::OPENGL_ES_API,
+    NoApi                    = ffi::NO_API,
 }
 
 /// Context robustness tokens.

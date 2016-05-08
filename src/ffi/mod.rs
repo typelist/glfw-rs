@@ -21,6 +21,9 @@
 use libc::{c_char, c_double, c_float, c_int};
 use libc::{c_uchar, c_uint, c_ushort, c_void};
 
+#[cfg(feature = "vulkan")] use libc::{uint32_t};
+#[cfg(feature = "vulkan")] use vk;
+
 mod link;
 
 pub const FALSE                        : c_int = 0;
@@ -236,6 +239,7 @@ pub const CONTEXT_RELEASE_BEHAVIOR     : c_int = 0x00022009; // TODO: Not yet ex
 
 pub const OPENGL_API                   : c_int = 0x00030001;
 pub const OPENGL_ES_API                : c_int = 0x00030002;
+pub const NO_API                       : c_int = 0x00000000;
 
 pub const NO_ROBUSTNESS                : c_int = 0x00000000;
 pub const NO_RESET_NOTIFICATION        : c_int = 0x00031001;
@@ -416,6 +420,12 @@ extern "C" {
     pub fn glfwSwapInterval(interval: c_int);
     pub fn glfwExtensionSupported(extension: *const c_char) -> c_int;
     pub fn glfwGetProcAddress(procname: *const c_char) -> GLFWglproc;
+
+    #[cfg(feature="vulkan")] pub fn glfwVulkanSupported() -> c_int;
+    #[cfg(feature="vulkan")] pub fn glfwGetRequiredInstanceExtensions(count: *mut uint32_t) -> *mut *const c_char;
+    #[cfg(feature="vulkan")] pub fn glfwGetPhysicalDevicePresentationSupport(
+        instance: vk::Instance, device: vk::PhysicalDevice, queuefamily: uint32_t) -> c_int;
+    #[cfg(feature="vulkan")] pub fn glfwCreateWindowSurface(instance: vk::Instance, window: *mut GLFWwindow, allocator: *const vk::AllocationCallbacks, surface: *mut vk::SurfaceKHR) -> vk::Result;
 
     // native APIs
 
